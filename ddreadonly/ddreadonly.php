@@ -124,46 +124,25 @@ function mm_ddReadonly($fields = '', $roles = '', $templates = ''){
 		}
 	//При рендере документа
 	}else if ($e->name == 'OnDocFormRender'){
-		//Разбиваем переданные поля в массивчик
-		$fields = makeArray($fields);
+		//Получаем все используемые для данного шаблона поля
+		$fields = getTplMatchedFields($fields);
+		if ($fields == false){return;}
 		
-		//Если есть что-то
-		if (count($fields) > 0){
-			$output = "// ---------------- mm_ddReadonly :: Begin ------------- \n";
-			
-			$output .= 'var $mm_ddReadonly;';
-			
-			//Получаем id TV
-			$tvs = tplUseTvs($mm_current_page['template'], $fields);
-			//Если что-то есть
-			if (is_array($tvs) && count($tvs) > 0){
-				//Перебираем TV
-				foreach ($tvs as $val){
-					//Вставляем значение перед оригиналом и сносим оригинал нафиг
-					$output .= '
-$mm_ddReadonly = $j("#tv'.$val['id'].'");
+		$output = "//---------- mm_ddReadonly :: Begin -----\n";
+		
+		$output .= 'var $mm_ddReadonly;';
+		
+		foreach ($fields as $field){
+			$output .=
+'
+$mm_ddReadonly = $j("'.$mm_fields[$field]['fieldtype'].'[name=\''.$mm_fields[$field]['fieldname'].'\']");
 $mm_ddReadonly.before($mm_ddReadonly.val()).hide();
-					';
-				}
-			}
-			
-			if (count($fields) != count($tvs)){
-				//Перебираем поля
-				foreach ($fields as $val){
-					//Если такое поле есть и это не TV
-					if (isset($mm_fields[$val]) && $mm_fields[$val]['tv'] != 1){
-						$output .= '
-$mm_ddReadonly = $j("'.$mm_fields[$val]['fieldtype'].'[name=\"'.$mm_fields[$val]['fieldname'].'\"]");
-$mm_ddReadonly.before($mm_ddReadonly.val()).hide();
-						';
-					}
-				}
-			}
-			
-			$output .= "\n// ---------------- mm_ddReadonly :: End -------------";
-			
-			$e->output($output . "\n");
+';
 		}
+		
+		$output .= "//---------- mm_ddReadonly :: End -----\n";
+		
+		$e->output($output);
 	}
 }
 ?>
