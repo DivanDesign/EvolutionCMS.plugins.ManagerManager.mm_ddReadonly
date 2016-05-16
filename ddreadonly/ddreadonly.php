@@ -1,20 +1,19 @@
 <?php
 /**
  * mm_ddReadonly
- * @version 1.0.1 (2013-07-13)
+ * @version 1.0.2 (2016-05-16)
  * 
  * @desc A widget for ManagerManager allowing read-only mode for fields and TVs (their values are still visible but can not be changed).
  * 
- * @uses ManagerManager plugin 0.5.1.
+ * @uses ManagerManager plugin 0.6.2.
  * 
  * @param $fields {comma separated string} - The name(s) of the document fields (or TVs) for which the widget is applying. @required
  * @param $roles {comma separated string} - The roles that the widget is applied to (when this parameter is empty then widget is applied to the all roles). Default: ''.
  * @param $templates {comma separated string} - Templates IDs for which the widget is applying (empty value means the widget is applying to all templates). Default: ''.
  * 
- * @link http://code.divandesign.biz/modx/mm_ddreadonly/1.0.1
+ * @link http://code.divandesign.biz/modx/mm_ddreadonly/1.0.2
  * 
- * @copyright 2013, DivanDesign
- * http://www.DivanDesign.biz
+ * @copyright 2013–2016 DivanDesign {@link http://www.DivanDesign.biz }
  */
 
 function mm_ddReadonly($fields = '', $roles = '', $templates = ''){
@@ -25,7 +24,7 @@ function mm_ddReadonly($fields = '', $roles = '', $templates = ''){
 	
 	//Перед сохранением документа
 	if ($e->name == 'OnBeforeDocFormSave'){
-		//Если создаётся новый документ, у него нет никакого id ещё, да и нам пофиг, т.к. никто ничего с ним всё равно не мог сделать до сохранения
+		//Если создаётся новый документ, у него нет никакого id ещё (да и нам без разницы, т.к. никто ничего с ним всё равно не мог сделать до первого сохранения)
 		if ($e->params['mode'] == 'new'){return;}
 		
 		//ID документа
@@ -128,7 +127,7 @@ function mm_ddReadonly($fields = '', $roles = '', $templates = ''){
 		$fields = getTplMatchedFields($fields);
 		if ($fields == false){return;}
 		
-		$output = "//---------- mm_ddReadonly :: Begin -----\n";
+		$output = '//---------- mm_ddReadonly :: Begin -----'.PHP_EOL;
 		
 		$output .= 'var $mm_ddReadonly;';
 		
@@ -140,7 +139,7 @@ $mm_ddReadonly.before($mm_ddReadonly.val()).hide();
 ';
 		}
 		
-		$output .= "//---------- mm_ddReadonly :: End -----\n";
+		$output .= '//---------- mm_ddReadonly :: End -----'.PHP_EOL;
 		
 		$e->output($output);
 	}
