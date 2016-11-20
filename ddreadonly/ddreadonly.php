@@ -5,11 +5,13 @@
  * 
  * @desc A widget for ManagerManager allowing read-only mode for fields and TVs (their values are still visible but can not be changed).
  * 
- * @uses MODXEvo.plugin.ManagerManager >= 0.6.2.
+ * @uses PHP >= 5.4.
+ * @uses MODXEvo.plugin.ManagerManager >= 0.7.
  * 
- * @param $fields {string_commaSeparated} — The name(s) of the document fields (or TVs) for which the widget is applying. @required
- * @param $roles {string_commaSeparated} — The roles that the widget is applied to (when this parameter is empty then widget is applied to the all roles). Default: ''.
- * @param $templates {string_commaSeparated} — Templates IDs for which the widget is applying (empty value means the widget is applying to all templates). Default: ''.
+ * @param $params {array_associative|stdClass} — The object of params. @required
+ * @param $params['fields'] {string_commaSeparated} — The name(s) of the document fields (or TVs) for which the widget is applying. @required
+ * @param $params['roles'] {string_commaSeparated} — The roles that the widget is applied to (when this parameter is empty then widget is applied to the all roles). Default: ''.
+ * @param $params['templates'] {string_commaSeparated} — Templates IDs for which the widget is applying (empty value means the widget is applying to all templates). Default: ''.
  * 
  * @event OnBeforeDocFormSave
  * @event OnDocFormSave
@@ -21,15 +23,34 @@
  * @copyright 2013–2016 DivanDesign {@link http://www.DivanDesign.biz }
  */
 
-function mm_ddReadonly(
-	$fields = '',
-	$roles = '',
-	$templates = ''
-){
+function mm_ddReadonly($params){
+	//For backward compatibility
+	if (
+		!is_array($params) &&
+		!is_object($params)
+	){
+		//Convert ordered list of params to named
+		$params = ddTools::orderedParamsToNamed([
+			'paramsList' => func_get_args(),
+			'compliance' => [
+				'fields',
+				'roles',
+				'templates'
+			]
+		]);
+	}
+	
+	//Defaults
+	$params = (object) array_merge([
+// 		'fields' => '',
+		'roles' => '',
+		'templates' => ''
+	], (array) $params);
+	
 	global $modx, $mm_fields, $mm_current_page;
 	$e = &$modx->Event;
 	
-	if (!useThisRule($roles, $templates)){return;}
+	if (!useThisRule($params->roles, $params->templates)){return;}
 	
 	//Перед сохранением документа
 	if ($e->name == 'OnBeforeDocFormSave'){
@@ -45,9 +66,9 @@ function mm_ddReadonly(
 		}
 		
 		//Разбиваем переданные поля в массивчик
-		$fields = makeArray($fields);
+		$params->fields = makeArray($params->fields);
 		//Получаем id TV. TODO: Оптимизировать, чтобы всё было в один запрос
-		$tvs = tplUseTvs($mm_current_page['template'], $fields, '', 'id,name');
+		$tvs = tplUseTvs($mm_current_page['template'], $params->fields, '', 'id,name');
 		
 		//Результат
 		$resultFields = array();
@@ -85,27 +106,27 @@ function mm_ddReadonly(
 		}
 		
 		//Перебираем поля
-		foreach ($fields as $key => $val){
+		foreach ($params->fields as $key => $val){
 			//Если такого поля нет или это TV
 			if (
 				!isset($mm_fields[$val]) ||
 				$mm_fields[$val]['tv'] == 1
 			){
 				//Снесём
-				unset($fields[$key]);
+				unset($params->fields[$key]);
 			}
 		}
 		
-		if (count($fields) > 0){
+		if (count($params->fields) > 0){
 			//Получаем значения необходимых полей
-			$fields = $modx->db->getRow($modx->db->select(
-				implode(',', $fields),
+			$params->fields = $modx->db->getRow($modx->db->select(
+				implode(',', $params->fields),
 				ddTools::$tables['site_content'],
 				'id='.$docId
 			));
 			
 			//Переберём
-			foreach($fields as $key => $val){
+			foreach($params->fields as $key => $val){
 				if ($val != ''){
 					$resultFields[$key] = $val;
 				}
@@ -140,7 +161,7 @@ function mm_ddReadonly(
 	//При копировании документа
 	}else if ($e->name == 'OnDocDuplicate'){
 		//Получаем id TV
-		$tvs = tplUseTvs($mm_current_page['template'], $fields);
+		$tvs = tplUseTvs($mm_current_page['template'], $params->fields);
 		
 		//Если что-то оплучили
 		if (
@@ -159,14 +180,14 @@ function mm_ddReadonly(
 	//При рендере документа
 	}else if ($e->name == 'OnDocFormRender'){
 		//Получаем все используемые для данного шаблона поля
-		$fields = getTplMatchedFields($fields);
-		if ($fields == false){return;}
+		$params->fields = getTplMatchedFields($params->fields);
+		if ($params->fields == false){return;}
 		
 		$output = '//---------- mm_ddReadonly :: Begin -----'.PHP_EOL;
 		
 		$output .= 'var $mm_ddReadonly;';
 		
-		foreach ($fields as $field){
+		foreach ($params->fields as $field){
 			$output .=
 '
 $mm_ddReadonly = $j("'.$mm_fields[$field]['fieldtype'].'[name=\''.$mm_fields[$field]['fieldname'].'\']");
