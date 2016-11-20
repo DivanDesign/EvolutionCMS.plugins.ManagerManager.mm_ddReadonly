@@ -179,15 +179,11 @@ function mm_ddReadonly($params){
 		}
 	//При рендере документа
 	}else if ($e->name == 'OnDocFormRender'){
-		//Получаем все используемые для данного шаблона поля
-		$params->fields = getTplMatchedFields($params->fields);
-		if ($params->fields == false){return;}
-		
 		$output = '//---------- mm_ddReadonly :: Begin -----'.PHP_EOL;
 		
 		$output .=
 '
-$j.ddMM.getFieldElems({fields: "'.implode(',', $params->fields).'"}).each(function(){
+$j.ddMM.getFieldElems({fields: "'.$params->fields.'"}).each(function(){
  	var $this = $j(this);
 	
  	$this.before($this.val()).hide();
