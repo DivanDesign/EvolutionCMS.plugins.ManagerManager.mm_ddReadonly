@@ -185,15 +185,14 @@ function mm_ddReadonly($params){
 		
 		$output = '//---------- mm_ddReadonly :: Begin -----'.PHP_EOL;
 		
-		$output .= 'var $mm_ddReadonly;';
-		
-		foreach ($params->fields as $field){
-			$output .=
+		$output .=
 '
-$mm_ddReadonly = $j("'.$mm_fields[$field]['fieldtype'].'[name=\''.$mm_fields[$field]['fieldname'].'\']");
-$mm_ddReadonly.before($mm_ddReadonly.val()).hide();
+$j.ddMM.getFieldElems({fields: "'.implode(',', $params->fields).'"}).each(function(){
+ 	var $this = $j(this);
+	
+ 	$this.before($this.val()).hide();
+});
 ';
-		}
 		
 		$output .= '//---------- mm_ddReadonly :: End -----'.PHP_EOL;
 		
