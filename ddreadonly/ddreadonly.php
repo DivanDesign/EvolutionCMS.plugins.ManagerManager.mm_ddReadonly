@@ -1,7 +1,7 @@
 <?php
 /**
  * mm_ddReadonly
- * @version 1.0.2 (2016-05-16)
+ * @version 1.1 (2016-05-16)
  * 
  * @desc A widget for ManagerManager allowing read-only mode for fields and TVs (their values are still visible but can not be changed).
  * 
@@ -18,7 +18,7 @@
  * @event OnDocDuplicate
  * @event OnDocFormRender
  * 
- * @link http://code.divandesign.biz/modx/mm_ddreadonly/1.0.2
+ * @link http://code.divandesign.biz/modx/mm_ddreadonly/1.1
  * 
  * @copyright 2013–2016 DivanDesign {@link http://www.DivanDesign.biz }
  */
