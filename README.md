@@ -1,4 +1,4 @@
-# mm_ddReadonly
+# MODXEvo.plugin.ManagerManager.mm_ddReadonly
 
 A widget for ManagerManager allowing read-only mode for fields and TVs (their values are still visible but can not be changed).
 ___
