@@ -62,7 +62,7 @@ function mm_ddReadonly($params){
 		
 		//Если нужная переменная в сессии не определена, определим
 		if (!is_array($_SESSION['mm_ddReadonly'])){
-			$_SESSION['mm_ddReadonly'] = array();
+			$_SESSION['mm_ddReadonly'] = [];
 		}
 		
 		//Разбиваем переданные поля в массивчик
@@ -71,14 +71,14 @@ function mm_ddReadonly($params){
 		$tvs = tplUseTvs($mm_current_page['template'], $params->fields, '', 'id,name');
 		
 		//Результат
-		$resultFields = array();
+		$resultFields = [];
 		
 		//Если что-то оплучили
 		if (
 			is_array($tvs) &&
 			count($tvs) > 0
 		){
-			$tvsNames = array();
+			$tvsNames = [];
 			
 			//Пробежимся, переделаем под удобный нам формат
 			foreach ($tvs as $val){
@@ -168,7 +168,7 @@ function mm_ddReadonly($params){
 			is_array($tvs) &&
 			count($tvs) > 0
 		){
-			$tvIds = array();
+			$tvIds = [];
 			foreach ($tvs as $val){$tvIds[] = $val['id'];}
 			
 			//Удаляем значение TV для данного документа
