@@ -187,7 +187,7 @@ function mm_ddReadonly($params){
 			$_SESSION['mm_ddReadonly'][$docId] = $resultFields;
 		}
 	//После сохранения документа
-	}else if ($e->name == 'OnDocFormSave'){
+	}elseif ($e->name == 'OnDocFormSave'){
 		//Если создаётся новый документ, у него нет никакого id ещё, да и нам пофиг, т.к. никто ничего с ним всё равно не мог сделать до сохранения
 		if ($e->params['mode'] == 'new'){
 			return;
@@ -212,7 +212,7 @@ function mm_ddReadonly($params){
 			unset($_SESSION['mm_ddReadonly'][$docId]);
 		}
 	//При копировании документа
-	}else if ($e->name == 'OnDocDuplicate'){
+	}elseif ($e->name == 'OnDocDuplicate'){
 		//Получаем id TV
 		$tvs = tplUseTvs(
 			$mm_current_page['template'],
@@ -244,7 +244,7 @@ function mm_ddReadonly($params){
 			);
 		}
 	//При рендере документа
-	}else if ($e->name == 'OnDocFormRender'){
+	}elseif ($e->name == 'OnDocFormRender'){
 		$output = '//---------- mm_ddReadonly :: Begin -----' . PHP_EOL;
 		
 		//Hide original input and display just text instead
