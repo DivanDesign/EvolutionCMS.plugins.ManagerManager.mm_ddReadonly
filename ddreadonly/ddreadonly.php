@@ -24,12 +24,12 @@
  */
 
 function mm_ddReadonly($params){
-	//For backward compatibility
+	// For backward compatibility
 	if (
 		!is_array($params) &&
 		!is_object($params)
 	){
-		//Convert ordered list of params to named
+		// Convert ordered list of params to named
 		$params = ddTools::orderedParamsToNamed([
 			'paramsList' => func_get_args(),
 			'compliance' => [
@@ -40,7 +40,7 @@ function mm_ddReadonly($params){
 		]);
 	}
 	
-	//Defaults
+	// Defaults
 	$params = (object) array_merge(
 		[
 // 			'fields' => '',
@@ -65,28 +65,28 @@ function mm_ddReadonly($params){
 		return;
 	}
 	
-	//Перед сохранением документа
+	// Перед сохранением документа
 	if ($e->name == 'OnBeforeDocFormSave'){
 		if (
-			//Sometimes it is not set O_o
+			// Sometimes it is not set O_o
 			!is_array($e->params) ||
-			//Если создаётся новый документ, у него нет никакого id ещё (да и нам без разницы, т.к. никто ничего с ним всё равно не мог сделать до первого сохранения)
+			// Если создаётся новый документ, у него нет никакого id ещё (да и нам без разницы, т.к. никто ничего с ним всё равно не мог сделать до первого сохранения)
 			$e->params['mode'] == 'new'
 		){
 			return;
 		}
 		
-		//ID документа
+		// ID документа
 		$docId = $e->params['id'];
 		
-		//Если нужная переменная в сессии не определена, определим
+		// Если нужная переменная в сессии не определена, определим
 		if (!is_array($_SESSION['mm_ddReadonly'])){
 			$_SESSION['mm_ddReadonly'] = [];
 		}
 		
-		//Разбиваем переданные поля в массивчик
+		// Разбиваем переданные поля в массивчик
 		$params->fields = makeArray($params->fields);
-		//Получаем id TV. TODO: Оптимизировать, чтобы всё было в один запрос
+		// Получаем id TV. TODO: Оптимизировать, чтобы всё было в один запрос
 		$tvs = tplUseTvs(
 			$mm_current_page['template'],
 			$params->fields,
@@ -94,17 +94,17 @@ function mm_ddReadonly($params){
 			'id,name'
 		);
 		
-		//Результат
+		// Результат
 		$resultFields = [];
 		
-		//Если что-то оплучили
+		// Если что-то оплучили
 		if (
 			is_array($tvs) &&
 			count($tvs) > 0
 		){
 			$tvsNames = [];
 			
-			//Пробежимся, переделаем под удобный нам формат
+			// Пробежимся, переделаем под удобный нам формат
 			foreach (
 				$tvs as
 				$val
@@ -112,64 +112,64 @@ function mm_ddReadonly($params){
 				$tvsNames[$val['id']] = $val['name'];
 			}
 			
-			//Получаем значения TV
+			// Получаем значения TV
 			$tvs = $modx->db->makeArray($modx->db->select(
-				//Fields
+				// Fields
 				'value,tmplvarid AS id',
-				//From
+				// From
 				ddTools::$tables['site_tmplvar_contentvalues'],
-				//Where
+				// Where
 				'contentid=' . $docId . ' AND tmplvarid IN ' . makeSqlList(array_keys($tvsNames))
 			));
 			
-			//Если что-то нашлось
+			// Если что-то нашлось
 			if (count($tvs) > 0){
-				//Пробежимся
+				// Пробежимся
 				foreach (
 					$tvs as
 					$val
 				){
-					//Если значение не пустое
+					// Если значение не пустое
 					if ($val['value'] != ''){
-						//Запишем значения
+						// Запишем значения
 						$resultFields[$tvsNames[$val['id']]] = $val['value'];
 					}
 				}
 			}
 		}
 		
-		//Перебираем поля, оставляем только валидные поля документа
+		// Перебираем поля, оставляем только валидные поля документа
 		foreach (
 			$params->fields as
 			$key =>
 			$val
 		){
 			if (
-				//Если такого поля нет
+				// Если такого поля нет
 				!isset($mm_fields[$val]) ||
-				//Bли это TV
+				// Bли это TV
 				$mm_fields[$val]['tv'] == 1
 			){
-				//Снесём
+				// Снесём
 				unset($params->fields[$key]);
 			}
 		}
 		
 		if (count($params->fields) > 0){
-			//Получаем значения необходимых полей
+			// Получаем значения необходимых полей
 			$params->fields = $modx->db->getRow($modx->db->select(
-				//Fields
+				// Fields
 				implode(
 					',',
 					$params->fields
 				),
-				//From
+				// From
 				ddTools::$tables['site_content'],
-				//Where
+				// Where
 				'id=' . $docId
 			));
 			
-			//Переберём
+			// Переберём
 			foreach(
 				$params->fields as
 				$key =>
@@ -181,45 +181,45 @@ function mm_ddReadonly($params){
 			}
 		}
 		
-		//Если хоть что-то осталось
+		// Если хоть что-то осталось
 		if (count($resultFields) > 0){
-			//Сохраним значения в сессию, они нам ещё понадобятся
+			// Сохраним значения в сессию, они нам ещё понадобятся
 			$_SESSION['mm_ddReadonly'][$docId] = $resultFields;
 		}
-	//После сохранения документа
+	// После сохранения документа
 	}elseif ($e->name == 'OnDocFormSave'){
-		//Если создаётся новый документ, у него нет никакого id ещё, да и нам пофиг, т.к. никто ничего с ним всё равно не мог сделать до сохранения
+		// Если создаётся новый документ, у него нет никакого id ещё, да и нам пофиг, т.к. никто ничего с ним всё равно не мог сделать до сохранения
 		if ($e->params['mode'] == 'new'){
 			return;
 		}
 		
-		//ID документа
+		// ID документа
 		$docId = $e->params['id'];
 		
-		//Если данные о текущем документе есть
+		// Если данные о текущем документе есть
 		if (
 			is_array($_SESSION['mm_ddReadonly']) &&
 			is_array($_SESSION['mm_ddReadonly'][$docId]) &&
 			count($_SESSION['mm_ddReadonly'][$docId]) > 0
 		){
-			//Обновляем данные документа в соответствии с тем, что было раньше
+			// Обновляем данные документа в соответствии с тем, что было раньше
 			ddTools::updateDocument(
 				$docId,
 				$_SESSION['mm_ddReadonly'][$docId]
 			);
 			
-			//Сносим за ненадобностью
+			// Сносим за ненадобностью
 			unset($_SESSION['mm_ddReadonly'][$docId]);
 		}
-	//При копировании документа
+	// При копировании документа
 	}elseif ($e->name == 'OnDocDuplicate'){
-		//Получаем id TV
+		// Получаем id TV
 		$tvs = tplUseTvs(
 			$mm_current_page['template'],
 			$params->fields
 		);
 		
-		//Если что-то оплучили
+		// Если что-то оплучили
 		if (
 			is_array($tvs) &&
 			count($tvs) > 0
@@ -232,22 +232,22 @@ function mm_ddReadonly($params){
 				$tvIds[] = $val['id'];
 			}
 			
-			//Удаляем значение TV для данного документа
+			// Удаляем значение TV для данного документа
 			$modx->db->delete(
-				//From
+				// From
 				ddTools::$tables['site_tmplvar_contentvalues'],
-				//Where
+				// Where
 				'`contentid` = ' . $e->params['new_id'] . ' AND `tmplvarid` IN(' . implode(
 					',',
 					$tvIds
 				) . ')'
 			);
 		}
-	//При рендере документа
+	// При рендере документа
 	}elseif ($e->name == 'OnDocFormRender'){
-		$output = '//---------- mm_ddReadonly :: Begin -----' . PHP_EOL;
+		$output = '// ---------- mm_ddReadonly :: Begin -----' . PHP_EOL;
 		
-		//Hide original input and display just text instead
+		// Hide original input and display just text instead
 		$output .=
 '
 $j.ddMM.getFieldElems({fields: "' . $params->fields . '"}).each(function(){
@@ -257,7 +257,7 @@ $j.ddMM.getFieldElems({fields: "' . $params->fields . '"}).each(function(){
 });
 ';
 		
-		$output .= '//---------- mm_ddReadonly :: End -----' . PHP_EOL;
+		$output .= '// ---------- mm_ddReadonly :: End -----' . PHP_EOL;
 		
 		$e->output($output);
 	}
